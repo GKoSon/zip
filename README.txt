@@ -195,3 +195,55 @@ func main() {
 	fmt.Println("HELLO WORLD")
 }
 
+++++++++++++++++++++++++++
+++++++++++++++++++++++++++
+        
+git clone git@github.com:GKoSon/zip.git
+删除所有文件 只保留main.go
+通过VSCODE打开
+直接run main出错
+开始
+PS C:\Users\Koson.Gong\3D Objects\zip> go mod init test
+PS C:\Users\Koson.Gong\3D Objects\zip> go mod tidy
+
+此时可以正常WORK了 一行代码都没有修改
+当然也可以修改为主流风格
+package main
+
+import (
+	"fmt"
+
+	"github.com/GKoSon/zip/zip"
+)
+
+func main() {
+	zip.In()
+	fmt.Println("HELLO WORLD")
+}
+
+******************对比***************
+package main
+
+import (
+	"fmt"
+
+	x "github.com/GKoSon/zip/zip"
+)
+
+func main() {
+	x.In()
+	fmt.Println("HELLO WORLD")
+}
+
+
+到这里全部流程结束
+
+
+
+增加新功能:
+1---
+win10执行避免黑框框一闪而过 需要一个类似 百度 go的getchar函数
+我放在must里面 比如来料加工 没有来料 就会悬停CMD
+2--
+加压以后文件MD5的比较 需要大写 后面才可以开发API
+也就现在有3个API了 IN+OUT+CHECK

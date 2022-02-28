@@ -1,6 +1,7 @@
 package zip
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
@@ -23,7 +24,12 @@ var FILE_NAME string = "rpi_gw"
 
 func must(action string, err error) {
 	if err != nil {
-		panic("failed to " + action + ": " + err.Error())
+		//panic("failed to " + action + ": " + err.Error())
+		fmt.Printf("failed to " + action + ": " + err.Error())
+		reader := bufio.NewReader(os.Stdin)
+		input, _ := reader.ReadString('\n')
+		fmt.Printf("Input char is:%v", string([]byte(input)))
+		panic("failed")
 	}
 }
 func Out() {
@@ -59,7 +65,7 @@ again:
 		of.Close()
 	}
 }
-func checkFileMd5() bool {
+func CheckFileMd5() bool {
 	FILE_PATH := "./" + FILE_NAME + "/" + FILE_NAME
 	MD5_FILE_PATH := "./" + FILE_NAME + "/" + FILE_NAME + ".md5"
 	//fmt.Println(FILE_PATH)
