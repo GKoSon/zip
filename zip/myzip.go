@@ -86,7 +86,7 @@ func CheckFileMd5(afile, md5file string) bool {
 }
 
 // 获取文件的md5码
-func getFileMd5(filename string) string {
+func GetFileMd5(filename string) string {
 	// 文件全路径名
 	path := fmt.Sprintf("./%s", filename)
 	pFile, err := os.Open(path)
