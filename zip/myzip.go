@@ -128,7 +128,7 @@ func ZipFile(aFile, zipFile, filenameinzip string) {
 	FILE_MD5 := filenameinzip + "." + "md5"
 	w, err = zipw.Encrypt(FILE_MD5, PASSWD)
 	must("zipw.Encrypt", err)
-	md5, _ := hex.DecodeString(getFileMd5(FILE_PATH))
+	md5, _ := hex.DecodeString(GetFileMd5(FILE_PATH))
 	_, err = io.Copy(w, bytes.NewReader(md5))
 	must("io.Copy", err)
 	zipw.Flush()
