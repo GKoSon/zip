@@ -9,19 +9,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/looklzj/zip"
 )
 
 //COMMON
 var PASSWD string = "KOSON"
-
-//ZIP-->FILE
-var ZIP_PATH string = "./rpi_gw.zip"
-
-//FILE->ZIP
-var FILE_NAME string = "rpi_gw"
 
 func must(action string, err error) {
 	if err != nil {
@@ -33,17 +26,18 @@ func must(action string, err error) {
 		panic("failed")
 	}
 }
-func UNZipFile() {
-	r, err := zip.OpenReader(ZIP_PATH)
+func UNZipFile(zipFile string) {
+	r, err := zip.OpenReader(zipFile)
 	must("zip.OpenReader", err)
 	defer r.Close()
-	NEW_DIR_PATH := ZIP_PATH[0:strings.Index(ZIP_PATH, ".zip")]
-	fmt.Printf("NEW_DIR_PATH = %s\n", NEW_DIR_PATH)
 
+	fmt.Printf("zipFile = %s \n", zipFile)
+
+	NEW_DIR_PATH := zipFile[0 : len(zipFile)-4] //move 后缀.zip
 again:
 	err = os.Mkdir(NEW_DIR_PATH, 0777)
 	if err != nil {
-		must("os.RemoveAll", os.RemoveAll(ZIP_PATH))
+		must("os.RemoveAll", os.RemoveAll(NEW_DIR_PATH))
 		goto again
 	}
 
@@ -66,11 +60,11 @@ again:
 		of.Close()
 	}
 }
-func CheckFileMd5() bool {
-	FILE_PATH := "./" + FILE_NAME + "/" + FILE_NAME
-	MD5_FILE_PATH := "./" + FILE_NAME + "/" + FILE_NAME + ".md5"
-	//fmt.Println(FILE_PATH)
-	//fmt.Println(MD5_FILE_PATH)
+func CheckFileMd5(afile, md5file string) bool {
+	FILE_PATH := afile
+	MD5_FILE_PATH := md5file
+	fmt.Println(FILE_PATH)
+	fmt.Println(MD5_FILE_PATH)
 	pFile, err := os.Open(FILE_PATH)
 	if err != nil {
 		fmt.Printf("打开文件失败,filename=%v, err=%v", FILE_PATH, err)
@@ -107,26 +101,31 @@ func getFileMd5(filename string) string {
 	return hex.EncodeToString(md5h.Sum(nil))
 }
 
-func ZipFile() {
+/*
+aFile一个客观存在的文件的路径全名
+zipfile 需要生成的压缩文件的全名
+filenameinzip 压缩文件内文件的名字 建议和aFile最后一样
+*/
+func ZipFile(aFile, zipFile, filenameinzip string) {
 	//contents := []byte("Hello World")
-	FILE_PATH := "./" + FILE_NAME
+	FILE_PATH := aFile
 	contents, err := os.ReadFile(FILE_PATH) //打开文件
 	must("os.ReadFile", err)
 
-	ZIP_PATH := FILE_PATH + ".zip"
+	ZIP_PATH := zipFile
 	fzip, err := os.Create(ZIP_PATH) //建立ZIP文件
 	must("os.Create", err)
 
 	zipw := zip.NewWriter(fzip)
 	defer zipw.Close()
-	w, err := zipw.Encrypt(FILE_NAME, PASSWD) //ZIP里面的文件名称是FILE_NAME 密码是KOSON
+	w, err := zipw.Encrypt(filenameinzip, PASSWD) //ZIP里面的文件名称是FILE_NAME 密码是KOSON
 	must("zipw.Encrypt", err)
 
 	_, err = io.Copy(w, bytes.NewReader(contents)) //把文件A写到文件B
 	must("io.Copy", err)
 	zipw.Flush()
 
-	FILE_MD5 := FILE_NAME + "." + "md5"
+	FILE_MD5 := filenameinzip + "." + "md5"
 	w, err = zipw.Encrypt(FILE_MD5, PASSWD)
 	must("zipw.Encrypt", err)
 	md5, _ := hex.DecodeString(getFileMd5(FILE_PATH))
