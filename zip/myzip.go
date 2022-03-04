@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/looklzj/zip"
@@ -32,7 +33,7 @@ func must(action string, err error) {
 		panic("failed")
 	}
 }
-func Out() {
+func UNZipFile() {
 	r, err := zip.OpenReader(ZIP_PATH)
 	must("zip.OpenReader", err)
 	defer r.Close()
@@ -106,7 +107,7 @@ func getFileMd5(filename string) string {
 	return hex.EncodeToString(md5h.Sum(nil))
 }
 
-func In() {
+func ZipFile() {
 	//contents := []byte("Hello World")
 	FILE_PATH := "./" + FILE_NAME
 	contents, err := os.ReadFile(FILE_PATH) //打开文件
@@ -121,7 +122,7 @@ func In() {
 	w, err := zipw.Encrypt(FILE_NAME, PASSWD) //ZIP里面的文件名称是FILE_NAME 密码是KOSON
 	must("zipw.Encrypt", err)
 
-	_, err = io.Copy(w, bytes.NewReader(contents)) //把文件A写道文件B
+	_, err = io.Copy(w, bytes.NewReader(contents)) //把文件A写到文件B
 	must("io.Copy", err)
 	zipw.Flush()
 
@@ -132,4 +133,60 @@ func In() {
 	_, err = io.Copy(w, bytes.NewReader(md5))
 	must("io.Copy", err)
 	zipw.Flush()
+}
+
+/*文件夹操作*/
+/*
+Dirzip("C:\\Users\\Koson.Gong\\Desktop\\XX\\IMG", "C:\\Users\\Koson.Gong\\Desktop\\XX\\IMG.zip")
+桌面一个文件夹IMG压缩为参数2指定的文件
+*/
+func ZipDir(dir, zipFile string) {
+	fz, err := os.Create(zipFile)
+	must("os.Create", err)
+	defer fz.Close()
+
+	w := zip.NewWriter(fz)
+	defer w.Close()
+
+	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		fmt.Println(dir)
+		if !info.IsDir() {
+			fmt.Println(path)
+			//fDest, err := w.Create(path[len(dir)+1:])
+			fDest, err := w.Create(path)
+			must("w.Create", err)
+			fSrc, err := os.Open(path)
+			must("os.Open", err)
+			defer fSrc.Close()
+			_, err = io.Copy(fDest, fSrc)
+			must("io.Copy", err)
+		}
+		return nil
+	})
+}
+
+/*unzipDir("C:\\Users\\Koson.Gong\\Desktop\\XX\\IMG.zip", "D:\\adb\\.git")
+桌面一个IMG.zip 加压为参数2指定的文件
+*/
+func UNZipDir(zipFile, dir string) {
+	r, err := zip.OpenReader(zipFile)
+	must("zip.OpenReader", err)
+	defer r.Close()
+
+	for _, f := range r.File {
+		func() {
+			path := dir + string(filepath.Separator) + f.Name
+			os.MkdirAll(filepath.Dir(path), 0755)
+			fDest, err := os.Create(path)
+			must(" os.Create", err)
+			defer fDest.Close()
+
+			fSrc, err := f.Open()
+			must(" f.Open", err)
+			defer fSrc.Close()
+
+			_, err = io.Copy(fDest, fSrc)
+			must("io.Copy", err)
+		}()
+	}
 }
