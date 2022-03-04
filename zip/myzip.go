@@ -148,9 +148,7 @@ func ZipDir(dir, zipFile string) {
 	defer w.Close()
 
 	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		fmt.Println(dir)
 		if !info.IsDir() {
-			fmt.Println(path)
 			//fDest, err := w.Create(path[len(dir)+1:])
 			fDest, err := w.Create(path)
 			must("w.Create", err)
