@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/looklzj/zip"
+	"github.com/alexmullins/zip"
 )
 
 //COMMON
